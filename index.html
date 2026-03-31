@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APEX · Triathlon Intelligence</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+
+:root {
+  --bg: #f5f2eb;
+  --surface: #ede9e0;
+  --surface2: #e4dfd4;
+  --ink: #1a1814;
+  --ink2: #3d3a33;
+  --muted: #8a8578;
+  --border: #d0cbbf;
+  --run: #c94a2a;
+  --bike: #2a6ec9;
+  --swim: #2aa88a;
+  --gold: #c49a2a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Syne', sans-serif;
+  min-height: 100vh;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.6;
+}
+
+/* ── HEADER ── */
+.header {
+  padding: 20px 40px;
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid var(--ink);
+}
+.logo { font-size: 32px; font-weight: 800; letter-spacing: -1px; }
+.logo-tag { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-left: 12px; }
+.header-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+.hbtn {
+  padding: 9px 16px;
+  border: 1.5px solid var(--border);
+  background: white;
+  color: var(--ink2);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.hbtn:hover { border-color: var(--ink); background: var(--ink); color: white; }
+.hbtn.gold { border-color: var(--gold); color: var(--gold); background: rgba(196,154,42,0.05); }
+.hbtn.gold:hover { background: var(--gold); color: white; }
+.hbtn.connected { border-color: var(--swim); color: var(--swim); background: rgba(42,168,138,0.08); }
+
+/* ── LAYOUT ── */
+.main { display: grid; grid-template-columns: 290px 1fr; min-height: calc(100vh - 73px); }
+
+/* ── SIDEBAR ── */
+.sidebar { border-right: 1.5px solid var(--border); display: flex; flex-direction: column; }
+.sb-section { padding: 18px 20px; border-bottom: 1px solid var(--border); }
+.sb-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+
+.source-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border: 1.5px solid var(--border);
+  background: white; cursor: pointer; transition: all 0.2s; margin-bottom: 6px;
+}
+.source-row:hover { border-color: var(--ink); }
+.source-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+.source-icon.strava { background: #fc4c02; }
+.source-icon.garmin { background: #007cc3; }
+.src-name { font-size: 12px; font-weight: 600; flex: 1; }
+.src-status { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
+.dot.on { background: var(--swim); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+.filter-pills { display: flex; gap: 4px; }
+.pill { flex: 1; padding: 6px 4px; border: 1.5px solid var(--border); background: none; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; color: var(--muted); transition: all 0.15s; text-align: center; }
+.pill.run.active { border-color: var(--run); background: var(--run); color: white; }
+.pill.bike.active { border-color: var(--bike); background: var(--bike); color: white; }
+.pill.swim.active { border-color: var(--swim); background: var(--swim); color: white; }
+.pill.all.active { border-color: var(--ink); background: var(--ink); color: white; }
+
+.act-list { flex: 1; overflow-y: auto; }
+.act-empty { padding: 28px 20px; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; line-height: 2; }
+
+.act-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 11px 20px; cursor: pointer; transition: background 0.15s;
+  border-left: 3px solid transparent;
+}
+.act-item:hover { background: var(--surface); }
+.act-item.selected { background: var(--surface); }
+.act-item.run.selected { border-left-color: var(--run); }
+.act-item.bike.selected { border-left-color: var(--bike); }
+.act-item.swim.selected { border-left-color: var(--swim); }
+
+.act-sport { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; margin-top: 1px; }
+.act-sport.run { background: rgba(201,74,42,0.12); }
+.act-sport.bike { background: rgba(42,110,201,0.12); }
+.act-sport.swim { background: rgba(42,168,138,0.12); }
+
+.act-info { flex: 1; min-width: 0; }
+.act-name { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.act-meta { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 1px; margin-top: 2px; }
+.act-val { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500; white-space: nowrap; }
+
+.analyze-btn {
+  margin: 14px 20px; padding: 14px;
+  background: var(--ink); color: white;
+  border: none; font-family: 'Syne', sans-serif;
+  font-size: 14px; font-weight: 700; letter-spacing: 0.5px;
+  cursor: pointer; transition: all 0.2s; width: calc(100% - 40px);
+}
+.analyze-btn:hover:not(:disabled) { background: var(--run); }
+.analyze-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+
+/* ── CONTENT ── */
+.content { overflow-y: auto; }
+
+/* Connect screen */
+.connect-screen {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 80vh; gap: 28px; text-align: center; padding: 40px;
+}
+.connect-headline { font-size: 52px; font-weight: 800; letter-spacing: -2px; line-height: 1.05; max-width: 560px; }
+.connect-headline span { color: var(--run); }
+.connect-sub { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; max-width: 380px; line-height: 2; }
+.connect-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+.cbtn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 14px 24px; font-family: 'Syne', sans-serif;
+  font-size: 14px; font-weight: 700; border: 2px solid;
+  cursor: pointer; transition: all 0.2s; text-decoration: none; background: none;
+}
+.cbtn.strava { border-color: #fc4c02; color: #fc4c02; }
+.cbtn.strava:hover { background: #fc4c02; color: white; }
+.cbtn.demo { border-color: var(--gold); color: var(--gold); }
+.cbtn.demo:hover { background: var(--gold); color: white; }
+
+/* Error screen */
+.error-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; gap: 16px; text-align: center; padding: 40px; }
+.error-title { font-size: 22px; font-weight: 800; }
+.error-body { font-size: 14px; line-height: 1.75; color: var(--ink2); max-width: 440px; }
+.error-body a { color: var(--run); }
+
+/* Analysis */
+.analysis-wrap { padding: 36px 44px; }
+
+.wh-card {
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 20px; padding: 24px 28px;
+  border: 2px solid var(--ink); background: white;
+  margin-bottom: 24px; position: relative; overflow: hidden;
+}
+.wh-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; }
+.wh-card.run::before { background: var(--run); }
+.wh-card.bike::before { background: var(--bike); }
+.wh-card.swim::before { background: var(--swim); }
+
+.wh-tag { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.wh-title { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 4px; }
+.wh-sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); }
+.wh-stats { display: flex; gap: 20px; align-items: flex-end; }
+.wh-stat { text-align: right; }
+.wh-stat-val { font-family: 'JetBrains Mono', monospace; font-size: 26px; font-weight: 500; line-height: 1; }
+.wh-stat-lbl { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-top: 3px; }
+
+/* Metrics strip */
+.metrics-strip { display: grid; grid-template-columns: repeat(5,1fr); gap: 1px; background: var(--border); border: 1.5px solid var(--border); margin-bottom: 24px; }
+.m-tile { background: white; padding: 16px 14px; }
+.m-lbl { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+.m-val { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 500; line-height: 1; }
+.m-unit { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 3px; }
+.m-delta { font-family: 'JetBrains Mono', monospace; font-size: 9px; margin-top: 5px; padding: 2px 5px; display: inline-block; }
+.m-delta.pos { background: rgba(42,168,138,0.1); color: var(--swim); }
+.m-delta.neg { background: rgba(201,74,42,0.1); color: var(--run); }
+
+/* Improvements */
+.section-title { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+
+.imp-card { border: 2px solid var(--ink); background: white; margin-bottom: 24px; }
+.imp-card-header { padding: 16px 20px; border-bottom: 1.5px solid var(--border); display: flex; align-items: center; gap: 10px; background: var(--ink); }
+.imp-card-header-title { font-size: 14px; font-weight: 700; color: white; }
+.imp-card-header-sub { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: rgba(255,255,255,0.4); letter-spacing: 2px; text-transform: uppercase; margin-left: auto; }
+
+.imp-item { display: flex; gap: 14px; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+.imp-item:last-child { border-bottom: none; }
+.imp-item.critical { border-left: 4px solid var(--run); }
+.imp-item.moderate { border-left: 4px solid var(--gold); }
+.imp-item.optimize { border-left: 4px solid var(--bike); }
+.imp-item.strength { border-left: 4px solid var(--swim); }
+
+.imp-icon { font-size: 20px; flex-shrink: 0; }
+.imp-body { flex: 1; }
+.imp-badge { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 8px; letter-spacing: 2px; text-transform: uppercase; padding: 2px 7px; margin-bottom: 5px; font-weight: 500; }
+.imp-item.critical .imp-badge { background: rgba(201,74,42,0.1); color: var(--run); }
+.imp-item.moderate .imp-badge { background: rgba(196,154,42,0.1); color: var(--gold); }
+.imp-item.optimize .imp-badge { background: rgba(42,110,201,0.1); color: var(--bike); }
+.imp-item.strength .imp-badge { background: rgba(42,168,138,0.1); color: var(--swim); }
+.imp-finding { font-size: 13.5px; line-height: 1.65; color: var(--ink2); margin-bottom: 7px; }
+.imp-action { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink); font-weight: 500; padding: 6px 10px; background: var(--surface); display: inline-block; }
+
+/* Two-col grid */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+
+.card { background: white; border: 1.5px solid var(--border); }
+.card-head { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.card-icon { width: 28px; height: 28px; border-radius: 50%; background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.card-title { font-size: 13px; font-weight: 700; }
+.card-body { padding: 16px 18px; font-size: 13.5px; line-height: 1.75; color: var(--ink2); }
+
+/* Next workout */
+.next-card { background: var(--ink); color: white; padding: 24px 28px; margin-bottom: 24px; display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; }
+.next-lbl { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 6px; }
+.next-title { font-size: 20px; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 8px; }
+.next-body { font-size: 13px; line-height: 1.7; color: rgba(255,255,255,0.65); }
+.next-targets { display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
+.next-target { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.4); white-space: nowrap; }
+.next-target span { color: white; font-weight: 500; }
+
+/* Chat */
+.chat-card { background: white; border: 1.5px solid var(--border); margin-bottom: 24px; }
+.chat-head { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.chat-hint { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 1.5px; margin-left: auto; }
+.chat-msgs { padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; }
+.chat-msg { display: flex; gap: 10px; animation: up 0.25s ease; }
+@keyframes up { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+.chat-av { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 500; flex-shrink: 0; }
+.chat-av.user { background: var(--ink); color: white; }
+.chat-av.ai { background: var(--surface2); color: var(--ink2); border: 1px solid var(--border); }
+.chat-bubble { flex: 1; font-size: 13px; line-height: 1.65; color: var(--ink2); padding: 9px 12px; background: var(--surface); }
+.chat-bubble.user { background: rgba(26,24,20,0.05); }
+.chat-row { display: flex; border-top: 1px solid var(--border); }
+.chat-in { flex: 1; padding: 12px 16px; border: none; background: none; font-family: 'Syne', sans-serif; font-size: 13px; color: var(--ink); outline: none; }
+.chat-in::placeholder { color: var(--muted); }
+.chat-go { padding: 12px 18px; background: none; border: none; border-left: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 2px; color: var(--muted); cursor: pointer; text-transform: uppercase; transition: all 0.2s; }
+.chat-go:hover { background: var(--ink); color: white; }
+.chat-go:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* Typing */
+.typing { display: flex; gap: 4px; padding: 3px 0; }
+.typing span { width: 5px; height: 5px; border-radius: 50%; background: var(--muted); animation: blink 1.2s infinite; }
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0%,80%,100%{opacity:0.2} 40%{opacity:1} }
+
+/* Trend bars */
+.trend-wrap { display: flex; gap: 6px; height: 50px; align-items: flex-end; margin-top: 12px; }
+.trend-col { flex: 1; display: flex; flex-direction: column; gap: 3px; align-items: center; }
+.trend-bar-fill { width: 100%; border-radius: 2px 2px 0 0; }
+.trend-bar-lbl { font-family: 'JetBrains Mono', monospace; font-size: 7px; color: var(--muted); letter-spacing: 0.5px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: clip; width: 100%; }
+
+/* Loading */
+.loading-overlay { display: none; position: fixed; inset: 0; background: rgba(245,242,235,0.92); z-index: 200; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+.loading-overlay.on { display: flex; }
+.spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--ink); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-txt { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--ink2); }
+
+/* Shimmer */
+.shimmer { background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 2px; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loader">
+  <div class="spinner"></div>
+  <div class="loading-txt" id="loaderTxt">Loading...</div>
+</div>
+
+<!-- Header -->
+<header class="header">
+  <div class="logo">APEX</div>
+  <div class="logo-tag">Triathlon Intelligence</div>
+  <div class="header-actions">
+    <button class="hbtn gold" onclick="loadDemoData()">⚡ Demo</button>
+    <button class="hbtn" id="stravaHeaderBtn" onclick="handleStravaConnect()">Connect Strava</button>
+  </div>
+</header>
+
+<div class="main">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sb-section">
+      <div class="sb-label">Sources</div>
+      <div class="source-row" onclick="handleStravaConnect()">
+        <div class="source-icon strava">🟠</div>
+        <div style="flex:1">
+          <div class="src-name">Strava</div>
+          <div class="src-status" id="stravaStatus">Not connected</div>
+        </div>
+        <div class="dot" id="stravaDot"></div>
+      </div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-label">Filter</div>
+      <div class="filter-pills">
+        <button class="pill all active" onclick="filterActs(this,'all')">All</button>
+        <button class="pill run" onclick="filterActs(this,'run')">🏃</button>
+        <button class="pill bike" onclick="filterActs(this,'bike')">🚴</button>
+        <button class="pill swim" onclick="filterActs(this,'swim')">🏊</button>
+      </div>
+    </div>
+
+    <div class="act-list" id="actList">
+      <div class="act-empty">Connect Strava<br>or load demo data</div>
+    </div>
+
+    <button class="analyze-btn" id="analyzeBtn" disabled onclick="runAnalysis()">
+      Analyze Selected →
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div class="content" id="contentArea">
+    <div class="connect-screen" id="connectScreen">
+      <div class="connect-headline">Your training,<br><span>precisely</span><br>analyzed.</div>
+      <div class="connect-sub">Pull your real workouts from Strava. Claude AI delivers priority-ranked improvement recommendations — not generic advice.</div>
+      <div class="connect-btns">
+        <button class="cbtn strava" onclick="handleStravaConnect()">🟠 Connect Strava</button>
+        <button class="cbtn demo" onclick="loadDemoData()">⚡ Try Demo Data</button>
+      </div>
+    </div>
+    <div id="analysisArea" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+// ── ATHLETE CONTEXT ──────────────────────────────────────────────────────────
+const ATHLETE = {
+  name: 'Pranav',
+  goals: 'Sprint Triathlon (August 3, 2026) and Full Marathon (October 11, 2026)',
+  ftp: 245,
+  weight: 188,
+  height: "5'10\"",
+  trainingPhase: 'Base Building → Tri Build',
+  experience: '15+ years endurance athlete, CISSP/CCIE background (detail-oriented)',
+};
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+const S = {
+  accessToken: null,
+  refreshToken: null,
+  tokenExpiry: null,
+  activities: [],
+  allActivities: [],
+  selectedId: null,
+  currentAnalysis: null,
+  chatHistory: [],
+  filterSport: 'all',
+};
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  loadStoredTokens();
+
+  // OAuth callback
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  if (code) {
+    window.history.replaceState({}, '', window.location.pathname);
+    await exchangeCode(code);
+    return;
+  }
+
+  if (S.accessToken) {
+    if (isTokenExpired()) {
+      await refreshAccessToken();
+    } else {
+      markStravaConnected();
+      await fetchActivities();
+    }
+  }
+});
+
+// ── TOKEN STORAGE ─────────────────────────────────────────────────────────────
+function loadStoredTokens() {
+  try {
+    const raw = localStorage.getItem('apex_tokens');
+    if (!raw) return;
+    const t = JSON.parse(raw);
+    S.accessToken = t.accessToken || null;
+    S.refreshToken = t.refreshToken || null;
+    S.tokenExpiry = t.expiry || null;
+  } catch(e) {}
+}
+
+function saveTokens(access, refresh, expiresAt) {
+  S.accessToken = access;
+  S.refreshToken = refresh;
+  S.tokenExpiry = expiresAt;
+  localStorage.setItem('apex_tokens', JSON.stringify({
+    accessToken: access,
+    refreshToken: refresh,
+    expiry: expiresAt,
+  }));
+}
+
+function clearTokens() {
+  S.accessToken = null; S.refreshToken = null; S.tokenExpiry = null;
+  localStorage.removeItem('apex_tokens');
+}
+
+function isTokenExpired() {
+  if (!S.tokenExpiry) return true;
+  return Date.now() / 1000 > S.tokenExpiry - 300; // 5min buffer
+}
+
+// ── STRAVA OAUTH ──────────────────────────────────────────────────────────────
+function handleStravaConnect() {
+  if (S.accessToken && !isTokenExpired()) {
+    fetchActivities();
+    return;
+  }
+  // Redirect to Strava OAuth — client_id is public, safe in frontend
+  // STRAVA_CLIENT_ID must be set as a Netlify env var AND injected here,
+  // OR you hardcode your own client_id below (it's public info):
+  const clientId = window.STRAVA_CLIENT_ID || '{{STRAVA_CLIENT_ID}}';
+  if (clientId === '{{STRAVA_CLIENT_ID}}' || !clientId) {
+    showError(
+      'Strava Client ID not configured',
+      'Set <code>STRAVA_CLIENT_ID</code> as a Netlify environment variable, then redeploy.<br><br>' +
+      'Get it from <a href="https://www.strava.com/settings/api" target="_blank">strava.com/settings/api</a>'
+    );
+    return;
+  }
+  const redirect = encodeURIComponent(window.location.origin + window.location.pathname);
+  window.location.href = `https://www.strava.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirect}&response_type=code&scope=read,activity:read_all`;
+}
+
+async function exchangeCode(code) {
+  showLoader('Authenticating with Strava...');
+  try {
+    const res = await fetch('/.netlify/functions/strava-token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, grant_type: 'authorization_code' }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.access_token) {
+      throw new Error(data.message || data.error || `HTTP ${res.status}`);
+    }
+    saveTokens(data.access_token, data.refresh_token, data.expires_at);
+    markStravaConnected();
+    await fetchActivities();
+  } catch(e) {
+    hideLoader();
+    showError('Strava Auth Failed', e.message);
+  }
+}
+
+async function refreshAccessToken() {
+  if (!S.refreshToken) { clearTokens(); return; }
+  try {
+    const res = await fetch('/.netlify/functions/strava-token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: S.refreshToken, grant_type: 'refresh_token' }),
+    });
+    const data = await res.json();
+    if (data.access_token) {
+      saveTokens(data.access_token, data.refresh_token, data.expires_at);
+      markStravaConnected();
+      await fetchActivities();
+    } else {
+      clearTokens();
+      showError('Session Expired', 'Your Strava session expired. <button class="cbtn strava" onclick="handleStravaConnect()" style="display:inline-flex;padding:8px 16px;font-size:12px;margin-top:12px">Reconnect Strava</button>');
+    }
+  } catch(e) {
+    clearTokens();
+  }
+}
+
+// ── STRAVA ACTIVITIES ─────────────────────────────────────────────────────────
+async function fetchActivities() {
+  showLoader('Fetching your activities...');
+  try {
+    const res = await fetch('https://www.strava.com/api/v3/athlete/activities?per_page=30', {
+      headers: { 'Authorization': `Bearer ${S.accessToken}` },
+    });
+
+    if (res.status === 401) {
+      // Token expired mid-session
+      await refreshAccessToken();
+      return;
+    }
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || `Strava API error ${res.status}`);
+    }
+
+    const raw = await res.json();
+
+    if (!Array.isArray(raw) || raw.length === 0) {
+      showError('No Activities Found',
+        'Connected successfully, but no activities found. Make sure your Strava account has Run, Ride, or Swim activities and the app has <strong>activity:read_all</strong> scope.<br><br>' +
+        '<button class="cbtn strava" onclick="handleStravaConnect()" style="display:inline-flex;padding:8px 16px;font-size:12px;margin-top:12px">Re-authorize</button>'
+      );
+      return;
+    }
+
+    S.allActivities = raw
+      .filter(a => ['Run','Ride','Swim','VirtualRide','Workout'].includes(a.type))
+      .map(mapActivity);
+
+    S.activities = [...S.allActivities];
+
+    if (S.activities.length === 0) {
+      showError('No Triathlon Activities', 'Connected, but no Run/Ride/Swim activities in recent history.');
+      return;
+    }
+
+    renderActivityList();
+    showScreen('list');
+  } catch(e) {
+    showError('Fetch Failed', e.message + '<br><br><button class="cbtn strava" onclick="fetchActivities()" style="display:inline-flex;padding:8px 16px;font-size:12px;margin-top:12px">Retry</button>');
+  } finally {
+    hideLoader();
+  }
+}
+
+function mapActivity(a) {
+  const sport = a.type === 'Run' ? 'run' : (a.type === 'Ride' || a.type === 'VirtualRide') ? 'bike' : 'swim';
+  return {
+    id: a.id,
+    source: 'strava',
+    name: a.name,
+    sport,
+    date: a.start_date_local?.split('T')[0] || '',
+    distMiles: a.distance ? (a.distance / 1609.34).toFixed(2) : null,
+    distYards: sport === 'swim' && a.distance ? Math.round(a.distance * 1.09361) : null,
+    durationMin: Math.round((a.moving_time || 0) / 60),
+    elevFt: a.total_elevation_gain ? Math.round(a.total_elevation_gain * 3.28084) : null,
+    avgHR: a.average_heartrate || null,
+    maxHR: a.max_heartrate || null,
+    avgPowerW: a.average_watts || null,
+    avgSpeedMph: a.average_speed ? (a.average_speed * 2.23694).toFixed(1) : null,
+    sufferScore: a.suffer_score || null,
+    calories: a.calories || null,
+    raw: a,
+  };
+}
+
+// ── ACTIVITY LIST ─────────────────────────────────────────────────────────────
+function renderActivityList() {
+  const icons = { run: '🏃', bike: '🚴', swim: '🏊' };
+  const list = document.getElementById('actList');
+
+  const toShow = S.filterSport === 'all' ? S.activities : S.activities.filter(a => a.sport === S.filterSport);
+
+  if (!toShow.length) {
+    list.innerHTML = '<div class="act-empty">No activities match this filter</div>';
+    return;
+  }
+
+  list.innerHTML = toShow.map(a => {
+    const stat = a.sport === 'bike' && a.avgPowerW ? `${a.avgPowerW}W`
+      : a.sport === 'swim' ? `${a.distYards || '—'}yd`
+      : `${a.distMiles}mi`;
+    return `
+      <div class="act-item ${a.sport}${S.selectedId === a.id ? ' selected' : ''}"
+           id="act-${a.id}" onclick="selectAct(${a.id})">
+        <div class="act-sport ${a.sport}">${icons[a.sport]}</div>
+        <div class="act-info">
+          <div class="act-name">${a.name}</div>
+          <div class="act-meta">${a.date} · ${a.durationMin}min</div>
+        </div>
+        <div class="act-val">${stat}</div>
+      </div>`;
+  }).join('');
+}
+
+function filterActs(btn, sport) {
+  S.filterSport = sport;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  renderActivityList();
+}
+
+function selectAct(id) {
+  S.selectedId = id;
+  document.querySelectorAll('.act-item').forEach(el => el.classList.remove('selected'));
+  document.getElementById(`act-${id}`)?.classList.add('selected');
+  document.getElementById('analyzeBtn').disabled = false;
+}
+
+// ── DEMO DATA ─────────────────────────────────────────────────────────────────
+function loadDemoData() {
+  S.allActivities = [
+    { id:1, source:'demo', name:'Tuesday Zone 2 Run', sport:'run', date:'2026-03-28', distMiles:'7.8', durationMin:72, elevFt:210, avgHR:138, maxHR:152, avgPowerW:null, sufferScore:42, calories:680 },
+    { id:2, source:'demo', name:'Zwift Sweet Spot 3×12', sport:'bike', date:'2026-03-26', distMiles:'22.4', durationMin:75, elevFt:null, avgHR:156, maxHR:172, avgPowerW:218, sufferScore:78, calories:890 },
+    { id:3, source:'demo', name:'Masters Swim Endurance', sport:'swim', date:'2026-03-25', distYards:2400, durationMin:52, avgHR:null, maxHR:null, avgPowerW:null, sufferScore:null, calories:420 },
+    { id:4, source:'demo', name:'Long Run — Easy Effort', sport:'run', date:'2026-03-22', distMiles:'13.1', durationMin:128, elevFt:380, avgHR:144, maxHR:162, avgPowerW:null, sufferScore:88, calories:1240 },
+    { id:5, source:'demo', name:'Outdoor Brick Ride+Run', sport:'bike', date:'2026-03-20', distMiles:'28.0', durationMin:95, elevFt:640, avgHR:148, maxHR:178, avgPowerW:204, sufferScore:95, calories:1050 },
+    { id:6, source:'demo', name:'Track 5×1mi Intervals', sport:'run', date:'2026-03-18', distMiles:'7.2', durationMin:58, elevFt:45, avgHR:168, maxHR:181, avgPowerW:null, sufferScore:112, calories:720 },
+  ];
+  S.activities = [...S.allActivities];
+  markStravaConnected('Demo Mode');
+  renderActivityList();
+  showScreen('list');
+}
+
+// ── ANALYSIS ──────────────────────────────────────────────────────────────────
+async function runAnalysis() {
+  const act = S.allActivities.find(a => a.id === S.selectedId);
+  if (!act) return;
+
+  showLoader('Running AI analysis...');
+  S.chatHistory = [];
+
+  const prompt = buildPrompt(act);
+
+  try {
+    const res = await fetch('/.netlify/functions/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      const msg = data?.error?.message || data?.error || `HTTP ${res.status}`;
+      throw new Error(`Claude API: ${msg}`);
+    }
+
+    const text = (data.content || []).map(b => b.text || '').join('');
+    const clean = text.replace(/```json[\s\S]*?```/g, m => m.slice(7,-3)).replace(/```/g,'').trim();
+    const analysis = JSON.parse(clean);
+
+    S.currentAnalysis = { act, analysis };
+    renderAnalysis(act, analysis);
+    showScreen('analysis');
+
+  } catch(e) {
+    console.error('Analysis error:', e);
+    showError('Analysis Failed', `${e.message}<br><br>Check browser console (F12) for full details.`);
+  } finally {
+    hideLoader();
+  }
+}
+
+function buildPrompt(a) {
+  const w = JSON.stringify({
+    name: a.name, sport: a.sport, date: a.date,
+    distance_miles: a.distMiles, distance_yards: a.distYards,
+    duration_min: a.durationMin, elevation_ft: a.elevFt,
+    avg_hr: a.avgHR, max_hr: a.maxHR,
+    avg_power_w: a.avgPowerW, calories: a.calories,
+    suffer_score: a.sufferScore,
+  }, null, 2);
+
+  return `ATHLETE PROFILE:
+Name: ${ATHLETE.name}
+Race goals: ${ATHLETE.goals}
+FTP: ${ATHLETE.ftp}W | Weight: ${ATHLETE.weight}lbs | Height: ${ATHLETE.height}
+Training phase: ${ATHLETE.trainingPhase}
+Background: ${ATHLETE.experience}
+
+WORKOUT:
+${w}
+
+You are an elite triathlon coach. Respond ONLY with a valid JSON object — no markdown fences, no preamble, no trailing text.
+
+{
+  "headline": "punchy 6-8 word workout summary",
+  "performanceScore": 72,
+  "performanceSummary": "3-4 sentence honest assessment referencing actual numbers. No filler.",
+  "metrics": [
+    {"label":"Intensity","value":"Mod-High","unit":"","delta":"HR:pace ratio elevated","deltaDir":"neg"},
+    {"label":"Duration","value":"72","unit":"min","delta":"on plan","deltaDir":"pos"},
+    {"label":"Avg HR","value":"138","unit":"bpm","delta":"zone 2 ✓","deltaDir":"pos"},
+    {"label":"Load","value":"Moderate","unit":"","delta":"42 suffer score","deltaDir":"pos"},
+    {"label":"Recovery","value":"16","unit":"hrs","delta":"before next hard effort","deltaDir":"neutral"}
+  ],
+  "improvements": [
+    {
+      "priority": "critical",
+      "icon": "🎯",
+      "tag": "Short label",
+      "finding": "What the data shows — be specific, cite numbers",
+      "action": "Exact thing to do in the NEXT session. No vague advice."
+    },
+    {
+      "priority": "moderate",
+      "icon": "📈",
+      "tag": "Short label",
+      "finding": "...",
+      "action": "..."
+    },
+    {
+      "priority": "optimize",
+      "icon": "⚡",
+      "tag": "Short label",
+      "finding": "...",
+      "action": "..."
+    },
+    {
+      "priority": "strength",
+      "icon": "✅",
+      "tag": "What you did well",
+      "finding": "...",
+      "action": "Keep doing this by..."
+    }
+  ],
+  "loadText": "2-3 sentences on fatigue, recovery window, readiness for next hard session.",
+  "trendBars": [
+    {"label":"Aerobic Base","pct":68,"sport":"${a.sport}"},
+    {"label":"Threshold","pct":54,"sport":"${a.sport}"},
+    {"label":"Efficiency","pct":71,"sport":"${a.sport}"}
+  ],
+  "nextWorkout": {
+    "title": "Specific workout name",
+    "rationale": "Why this exact workout follows today's session logically.",
+    "targets": [
+      {"label":"Duration","value":"45 min"},
+      {"label":"Intensity","value":"Zone 1-2 only"},
+      {"label":"Focus","value":"Aerobic flush"}
+    ]
+  }
+}
+
+Rules: exactly 4 improvements (critical→moderate→optimize→strength order). Reference real numbers from the workout. This athlete has 15+ years experience — no explaining basics. Make the action items specific enough to execute without clarification.`;
+}
+
+// ── RENDER ANALYSIS ───────────────────────────────────────────────────────────
+function renderAnalysis(a, an) {
+  const sc = an.performanceScore;
+  const scoreCol = sc >= 85 ? 'var(--swim)' : sc >= 70 ? 'var(--bike)' : sc >= 55 ? 'var(--gold)' : 'var(--run)';
+  const sportCols = { run: 'var(--run)', bike: 'var(--bike)', swim: 'var(--swim)' };
+
+  const mainVal = a.sport === 'bike' && a.avgPowerW ? `${a.avgPowerW}W`
+    : a.sport === 'swim' ? `${a.distYards || '—'}yd`
+    : `${a.distMiles}mi`;
+
+  document.getElementById('analysisArea').innerHTML = `
+  <div class="analysis-wrap">
+
+    <!-- Header card -->
+    <div class="wh-card ${a.sport}">
+      <div>
+        <div class="wh-tag">${a.sport.toUpperCase()} · ${a.source.toUpperCase()} · ${a.date}</div>
+        <div class="wh-title">${an.headline || a.name}</div>
+        <div class="wh-sub">${a.name} · ${a.durationMin} min${a.elevFt ? ` · ${a.elevFt}ft gain` : ''}</div>
+      </div>
+      <div class="wh-stats">
+        <div class="wh-stat">
+          <div class="wh-stat-val" style="color:${scoreCol}">${sc}</div>
+          <div class="wh-stat-lbl">Score /100</div>
+        </div>
+        <div class="wh-stat">
+          <div class="wh-stat-val">${mainVal}</div>
+          <div class="wh-stat-lbl">${a.sport === 'bike' ? 'Avg Power' : a.sport === 'swim' ? 'Distance' : 'Distance'}</div>
+        </div>
+        ${a.avgHR ? `<div class="wh-stat"><div class="wh-stat-val">${a.avgHR}</div><div class="wh-stat-lbl">Avg HR · bpm</div></div>` : ''}
+      </div>
+    </div>
+
+    <!-- Metrics strip -->
+    <div class="metrics-strip">
+      ${(an.metrics || []).slice(0,5).map(m => `
+        <div class="m-tile">
+          <div class="m-lbl">${m.label}</div>
+          <div class="m-val">${m.value}</div>
+          <div class="m-unit">${m.unit || ''}</div>
+          ${m.delta ? `<div class="m-delta ${m.deltaDir === 'pos' ? 'pos' : m.deltaDir === 'neg' ? 'neg' : ''}">${m.delta}</div>` : ''}
+        </div>`).join('')}
+    </div>
+
+    <!-- IMPROVEMENTS (primary focus) -->
+    <div class="section-title">AI · Improvement Recommendations</div>
+    <div class="imp-card">
+      <div class="imp-card-header">
+        <span style="font-size:18px">🎯</span>
+        <div class="imp-card-header-title">Priority-Ranked Improvements</div>
+        <div class="imp-card-header-sub">Specific to this workout · Actionable next session</div>
+      </div>
+      ${(an.improvements || []).map(imp => `
+        <div class="imp-item ${imp.priority || 'optimize'}">
+          <div class="imp-icon">${imp.icon || '→'}</div>
+          <div class="imp-body">
+            <div class="imp-badge">${(imp.priority || 'optimize').toUpperCase()} · ${imp.tag}</div>
+            <div class="imp-finding">${imp.finding}</div>
+            <div class="imp-action">→ Next: ${imp.action}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <!-- Performance + Load -->
+    <div class="two-col">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon">📊</div>
+          <div>
+            <div class="card-title">Performance Assessment</div>
+          </div>
+        </div>
+        <div class="card-body">
+          ${an.performanceSummary || ''}
+          <div class="trend-wrap">
+            ${(an.trendBars || []).map(b => `
+              <div class="trend-col">
+                <div class="trend-bar-fill" style="height:${b.pct}%;background:${sportCols[b.sport]||'var(--ink)'};opacity:0.75"></div>
+                <div class="trend-bar-lbl">${b.label}</div>
+              </div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon">⚡</div>
+          <div><div class="card-title">Training Load & Recovery</div></div>
+        </div>
+        <div class="card-body">${an.loadText || ''}</div>
+      </div>
+    </div>
+
+    <!-- Next workout -->
+    <div class="next-card">
+      <div>
+        <div class="next-lbl">Recommended Next Workout</div>
+        <div class="next-title">${an.nextWorkout?.title || ''}</div>
+        <div class="next-body">${an.nextWorkout?.rationale || ''}</div>
+      </div>
+      <div class="next-targets">
+        ${(an.nextWorkout?.targets || []).map(t => `
+          <div class="next-target">${t.label}: <span>${t.value}</span></div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Chat -->
+    <div class="chat-card">
+      <div class="chat-head">
+        <span style="font-size:16px">💬</span>
+        <div class="card-title">Ask Your Coach</div>
+        <div class="chat-hint">Grounded in this workout's data</div>
+      </div>
+      <div class="chat-msgs" id="chatMsgs">
+        <div class="chat-msg">
+          <div class="chat-av ai">AI</div>
+          <div class="chat-bubble">Analyzed your ${a.name}. Ask me anything — HR zones, race readiness, pacing strategy, what to fix before ${a.sport === 'run' ? 'October' : 'August'}.</div>
+        </div>
+      </div>
+      <div class="chat-row">
+        <input class="chat-in" id="chatIn" placeholder="Why was my HR elevated? Am I on track for August 3?..."
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}">
+        <button class="chat-go" id="chatGoBtn" onclick="sendChat()">Send →</button>
+      </div>
+    </div>
+
+  </div>`;
+}
+
+// ── CHAT ──────────────────────────────────────────────────────────────────────
+async function sendChat() {
+  const input = document.getElementById('chatIn');
+  const q = input.value.trim();
+  if (!q || !S.currentAnalysis) return;
+  input.value = '';
+  document.getElementById('chatGoBtn').disabled = true;
+
+  const msgs = document.getElementById('chatMsgs');
+  msgs.innerHTML += `<div class="chat-msg"><div class="chat-av user">PK</div><div class="chat-bubble user">${q}</div></div>`;
+
+  const tid = 'typ-' + Date.now();
+  msgs.innerHTML += `<div class="chat-msg" id="${tid}"><div class="chat-av ai">AI</div><div class="chat-bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+
+  S.chatHistory.push({ role: 'user', content: q });
+
+  const system = `You are an elite triathlon coach. Athlete: ${ATHLETE.name}, training for ${ATHLETE.goals}, FTP ${ATHLETE.ftp}W.
+
+Workout: ${JSON.stringify(S.currentAnalysis.act)}
+Analysis: ${JSON.stringify(S.currentAnalysis.analysis)}
+
+Answer directly, cite numbers, max 3-4 sentences unless genuinely needed. No filler.`;
+
+  try {
+    const res = await fetch('/.netlify/functions/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system,
+        messages: S.chatHistory,
+      }),
+    });
+    const data = await res.json();
+    const reply = (data.content || []).map(b => b.text || '').join('');
+    S.chatHistory.push({ role: 'assistant', content: reply });
+    document.getElementById(tid)?.remove();
+    msgs.innerHTML += `<div class="chat-msg"><div class="chat-av ai">AI</div><div class="chat-bubble">${reply}</div></div>`;
+  } catch(e) {
+    document.getElementById(tid)?.remove();
+    msgs.innerHTML += `<div class="chat-msg"><div class="chat-av ai">AI</div><div class="chat-bubble" style="color:var(--run)">Error: ${e.message}</div></div>`;
+  } finally {
+    document.getElementById('chatGoBtn').disabled = false;
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+}
+
+// ── UI HELPERS ────────────────────────────────────────────────────────────────
+function showScreen(s) {
+  document.getElementById('connectScreen').style.display = s === 'connect' ? 'flex' : 'none';
+  document.getElementById('analysisArea').style.display = s === 'analysis' ? 'block' : 'none';
+  if (s === 'list') {
+    document.getElementById('connectScreen').style.display = 'none';
+    document.getElementById('analysisArea').style.display = 'none';
+  }
+}
+
+function showError(title, body) {
+  hideLoader();
+  document.getElementById('connectScreen').style.display = 'flex';
+  document.getElementById('connectScreen').innerHTML = `
+    <div style="max-width:460px;text-align:center">
+      <div style="font-size:36px;margin-bottom:14px">⚠️</div>
+      <div style="font-size:20px;font-weight:800;margin-bottom:10px">${title}</div>
+      <div style="font-size:13.5px;line-height:1.8;color:var(--ink2)">${body}</div>
+    </div>`;
+  document.getElementById('analysisArea').style.display = 'none';
+}
+
+function markStravaConnected(label) {
+  document.getElementById('stravaDot').classList.add('on');
+  document.getElementById('stravaStatus').textContent = label || 'Connected';
+  document.getElementById('stravaHeaderBtn').textContent = label || 'Strava Connected';
+  document.getElementById('stravaHeaderBtn').classList.add('connected');
+}
+
+function showLoader(txt) {
+  document.getElementById('loaderTxt').textContent = txt || 'Loading...';
+  document.getElementById('loader').classList.add('on');
+}
+function hideLoader() { document.getElementById('loader').classList.remove('on'); }
+</script>
+</body>
+</html>
