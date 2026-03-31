@@ -441,13 +441,15 @@ function handleStravaConnect() {
   // Redirect to Strava OAuth — client_id is public, safe in frontend
   // STRAVA_CLIENT_ID must be set as a Netlify env var AND injected here,
   // OR you hardcode your own client_id below (it's public info):
-  const clientId = window.STRAVA_CLIENT_ID || '218733';
-  if (clientId === '218733' || !clientId) {
-    showError(
-      'Strava Client ID not configured',
-      'Set <code>STRAVA_CLIENT_ID</code> as a Netlify environment variable, then redeploy.<br><br>' +
-      'Get it from <a href="https://www.strava.com/settings/api" target="_blank">strava.com/settings/api</a>'
-    );
+ const clientId = '218733';
+if (!clientId) {
+  showError(
+    'Strava Client ID not configured',
+    'Set your Strava Client ID in index.html.<br><br>' +
+    'Get it from <a href="https://www.strava.com/settings/api" target="_blank">strava.com/settings/api</a>'
+  );
+  return;
+}
     return;
   }
   const redirect = encodeURIComponent(window.location.origin + window.location.pathname);
