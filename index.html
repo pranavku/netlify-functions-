@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Apex Triathlon — Pranav Kumar</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
@@ -16,8 +15,8 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font
 .load-logo{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:2.2rem;letter-spacing:0.1em;text-transform:uppercase;}
 .load-logo span{color:var(--orange);}
 .load-bar{width:140px;height:2px;background:var(--border2);border-radius:2px;overflow:hidden;}
-.load-fill{height:100%;background:var(--orange);animation:lp 1.4s ease-in-out forwards;}
-@keyframes lp{from{width:0}to{width:100%}}
+.load-fill{height:100%;background:var(--orange);animation:lp 1.8s ease-in-out infinite alternate;}
+@keyframes lp{from{width:10%}to{width:90%}}
 .load-text{font-size:0.72rem;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;}
 header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 2.5rem;border-bottom:0.5px solid var(--border);position:sticky;top:0;background:rgba(10,12,15,0.9);backdrop-filter:blur(16px);z-index:100;}
 .logo{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.35rem;letter-spacing:0.1em;text-transform:uppercase;}
@@ -25,9 +24,12 @@ header{display:flex;align-items:center;justify-content:space-between;padding:1.2
 .hdr{display:flex;align-items:center;gap:1rem;}
 .spill{display:flex;align-items:center;gap:6px;font-size:0.72rem;color:var(--muted);font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;text-transform:uppercase;}
 .sdot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2.5s infinite;}
+.sdot.loading{background:var(--amber);}
+.sdot.error{background:var(--red);}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
 .rbtn{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;padding:6px 14px;border:0.5px solid var(--border2);border-radius:4px;background:transparent;color:var(--muted);cursor:pointer;transition:all 0.2s;}
 .rbtn:hover{border-color:var(--orange);color:var(--orange);}
+.rbtn:disabled{opacity:0.4;cursor:not-allowed;}
 .hero{padding:3rem 2.5rem 2.5rem;border-bottom:0.5px solid var(--border);}
 .eyebrow{font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--orange);margin-bottom:0.5rem;}
 .hero h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(2.8rem,6vw,5rem);line-height:0.92;text-transform:uppercase;margin-bottom:2rem;}
@@ -38,7 +40,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:1.2
 .rc.pri{background:var(--surface2);}
 .rc.pri::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--orange);}
 .rtype{font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
-.rname{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text);margin-bottom:2px;}
+.rname{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:1rem;text-transform:uppercase;color:var(--text);margin-bottom:2px;}
 .rdate{font-size:0.72rem;color:var(--muted);margin-bottom:1rem;}
 .rdays{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:3.2rem;line-height:1;}
 .rc.pri .rdays{color:var(--orange);}
@@ -92,10 +94,12 @@ main{padding:2rem 2.5rem 4rem;max-width:1100px;}
 .fr:last-child{border-bottom:none;}
 .fr:hover{background:var(--surface2);}
 .fi{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
-.fi-sw{background:rgba(59,130,246,0.12);}
-.fi-ru{background:rgba(249,115,22,0.12);}
-.fi-wa{background:rgba(20,184,166,0.12);}
-.fi-st{background:rgba(168,85,247,0.12);}
+.fi-swim{background:rgba(59,130,246,0.12);}
+.fi-run{background:rgba(249,115,22,0.12);}
+.fi-walk{background:rgba(20,184,166,0.12);}
+.fi-strength{background:rgba(168,85,247,0.12);}
+.fi-bike{background:rgba(34,197,94,0.12);}
+.fi-other{background:rgba(107,114,128,0.12);}
 .fn{font-size:0.85rem;color:var(--text);flex:1;}
 .fm{font-size:0.7rem;color:var(--muted);}
 .fd{font-size:0.68rem;color:var(--muted);text-align:right;white-space:nowrap;}
@@ -103,6 +107,7 @@ main{padding:2rem 2.5rem 4rem;max-width:1100px;}
 .hl{background:rgba(34,197,94,0.1);color:var(--green);}
 .hm{background:rgba(245,158,11,0.1);color:var(--amber);}
 .hh{background:rgba(239,68,68,0.1);color:var(--red);}
+.no-data{padding:2rem;text-align:center;font-size:0.8rem;color:var(--muted);}
 footer{padding:1.5rem 2.5rem;border-top:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;margin-top:2rem;}
 .ft{font-size:0.7rem;color:var(--muted);}
 .sl-a{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--orange);text-decoration:none;}
@@ -122,14 +127,14 @@ footer{padding:1.5rem 2.5rem;border-top:0.5px solid var(--border);display:flex;a
 <div id="loading">
   <div class="load-logo">Apex <span>Tri</span></div>
   <div class="load-bar"><div class="load-fill"></div></div>
-  <div class="load-text">Loading training data</div>
+  <div class="load-text" id="load-text">Fetching Strava data</div>
 </div>
 
 <header>
   <div class="logo">Apex <span>Tri</span></div>
   <div class="hdr">
-    <div class="spill"><div class="sdot"></div><span id="sync-label">Strava live</span></div>
-    <button class="rbtn" onclick="location.reload()">↺ Refresh</button>
+    <div class="spill"><div class="sdot" id="sdot"></div><span id="sync-label">Syncing…</span></div>
+    <button class="rbtn" id="refresh-btn" onclick="loadData()">↺ Refresh</button>
   </div>
 </header>
 
@@ -167,17 +172,17 @@ footer{padding:1.5rem 2.5rem;border-top:0.5px solid var(--border);display:flex;a
 <main>
   <div class="sl">Last 14 days — Strava summary</div>
   <div class="sg">
-    <div class="sc"><div class="slb">Total activities</div><div class="sv" id="s-total">13</div><div class="ss" id="s-range">Mar 24 – Apr 8</div></div>
-    <div class="sc"><div class="slb">Total distance</div><div class="sv" id="s-dist">22.3 mi</div><div class="ss">run + swim + walk</div></div>
-    <div class="sc"><div class="slb">Total time</div><div class="sv" id="s-time">9h 31m</div><div class="ss">active training</div></div>
-    <div class="sc"><div class="slb">Bike sessions</div><div class="sv cr" id="s-bike">0</div><div class="ss">priority — get riding!</div></div>
+    <div class="sc"><div class="slb">Total activities</div><div class="sv" id="s-total">—</div><div class="ss" id="s-range">Loading…</div></div>
+    <div class="sc"><div class="slb">Total distance</div><div class="sv" id="s-dist">—</div><div class="ss">run + swim + walk</div></div>
+    <div class="sc"><div class="slb">Total time</div><div class="sv" id="s-time">—</div><div class="ss">active training</div></div>
+    <div class="sc"><div class="slb">Bike sessions</div><div class="sv" id="s-bike">—</div><div class="ss" id="s-bike-sub">loading…</div></div>
   </div>
 
   <div class="sl">Discipline breakdown</div>
   <div class="dg">
-    <div class="dc"><div class="dl">Swim</div><div class="dv">3 sessions</div><div class="ds">2.0 mi · avg HR 136 bpm · race-ready</div></div>
-    <div class="dc"><div class="dl">Run</div><div class="dv">4 sessions</div><div class="ds">15.1 mi · avg HR 165 bpm · needs Z2</div></div>
-    <div class="dc"><div class="dl">Strength + walk</div><div class="dv">6 sessions</div><div class="ds">active recovery · solid base</div></div>
+    <div class="dc"><div class="dl">Swim</div><div class="dv" id="d-swim">—</div><div class="ds" id="d-swim-sub">Loading…</div></div>
+    <div class="dc"><div class="dl">Run</div><div class="dv" id="d-run">—</div><div class="ds" id="d-run-sub">Loading…</div></div>
+    <div class="dc"><div class="dl">Strength + walk</div><div class="dv" id="d-other">—</div><div class="ds">active recovery</div></div>
   </div>
 
   <div class="twoc" style="margin-top:12px;">
@@ -186,25 +191,26 @@ footer{padding:1.5rem 2.5rem;border-top:0.5px solid var(--border);display:flex;a
       <div class="leg">
         <span class="li"><span class="lsq" style="background:#3b82f6"></span>Swim</span>
         <span class="li"><span class="lsq" style="background:#f97316"></span>Run</span>
+        <span class="li"><span class="lsq" style="background:#22c55e"></span>Bike</span>
         <span class="li"><span class="lsq" style="background:#6b7280"></span>Other</span>
       </div>
-      <div style="position:relative;height:190px;"><canvas id="chart-vol" role="img" aria-label="Bar chart of daily Strava activity duration">Activity volume chart.</canvas></div>
+      <div style="position:relative;height:190px;"><canvas id="chart-vol" role="img" aria-label="Bar chart of daily Strava activity duration">Loading.</canvas></div>
     </div>
     <div class="cb">
       <div class="ct">Run HR vs Zone 2 target</div>
       <div class="leg">
-        <span class="li"><span class="lsq" style="background:#f97316"></span>Avg HR (bpm)</span>
+        <span class="li"><span class="lsq" style="background:#f97316"></span>Avg HR</span>
         <span class="li"><span class="lsq" style="background:#f59e0b"></span>Z2 ceiling (150)</span>
       </div>
-      <div style="position:relative;height:190px;"><canvas id="chart-hr" role="img" aria-label="Line chart of run heart rate vs zone 2">HR chart.</canvas></div>
+      <div style="position:relative;height:190px;"><canvas id="chart-hr" role="img" aria-label="Line chart of run heart rate vs zone 2">Loading.</canvas></div>
     </div>
   </div>
 
   <div class="sl">Sprint tri readiness</div>
   <div class="rg">
-    <div class="rcard"><div class="rl">Swim</div><div class="rv rs">Strong</div><div class="rsub">0.7 mi sessions vs 0.47 mi race dist.</div></div>
-    <div class="rcard"><div class="rl">Run</div><div class="rv rb">Building</div><div class="rsub">HR averaging 165 bpm — Zone 2 focus needed</div></div>
-    <div class="rcard"><div class="rl">Bike</div><div class="rv rn">Not started</div><div class="rsub">No rides logged — Week 1 priority</div></div>
+    <div class="rcard"><div class="rl">Swim</div><div class="rv" id="r-swim">—</div><div class="rsub" id="r-swim-sub">Loading…</div></div>
+    <div class="rcard"><div class="rl">Run</div><div class="rv" id="r-run">—</div><div class="rsub" id="r-run-sub">Loading…</div></div>
+    <div class="rcard"><div class="rl">Bike</div><div class="rv" id="r-bike">—</div><div class="rsub" id="r-bike-sub">Loading…</div></div>
   </div>
 
   <div class="sl">Week 1 training plan (Apr 13–19)</div>
@@ -214,74 +220,193 @@ footer{padding:1.5rem 2.5rem;border-top:0.5px solid var(--border);display:flex;a
     <div class="wr"><div class="wd">Wed</div><div style="flex:1"><div class="wn">Swim — technique focus</div><div class="wdt">1000m · drills + bilateral breathing + sighting</div></div><span class="tp tps">Swim</span></div>
     <div class="wr"><div class="wd">Thu</div><div style="flex:1"><div class="wn">Strength — core + hips</div><div class="wdt">45 min · glutes, hip flexors, planks</div></div><span class="tp tpst">Strength</span></div>
     <div class="wr"><div class="wd">Fri</div><div style="flex:1"><div class="wn">Bike — easy Zone 2</div><div class="wdt">45 min · second ride this week</div></div><span class="tp tpb">Bike</span></div>
-    <div class="wr"><div class="wd">Sat</div><div style="flex:1"><div class="wn">Long run — easy</div><div class="wdt">50 min · HR under 150 the entire time, no exceptions</div></div><span class="tp tpr">Run</span></div>
+    <div class="wr"><div class="wd">Sat</div><div style="flex:1"><div class="wn">Long run — easy</div><div class="wdt">50 min · HR under 150 the entire time</div></div><span class="tp tpr">Run</span></div>
     <div class="wr"><div class="wd">Sun</div><div style="flex:1"><div class="wn">Full rest</div><div class="wdt">Recovery · no training today</div></div><span class="tp tprs">Rest</span></div>
   </div>
 
   <div class="sl">Recent Strava activities</div>
-  <div class="feed">
-    <div class="fr"><div class="fi fi-wa">🚶</div><div style="flex:1"><div class="fn">Afternoon walk</div><div class="fm">0.5 mi · 17 min</div></div><span class="hp hl">100 bpm</span><div class="fd">Apr 7</div></div>
-    <div class="fr"><div class="fi fi-wa">🚶</div><div style="flex:1"><div class="fn">Night walk</div><div class="fm">3.4 mi · 1h 13m</div></div><span class="hp hl">105 bpm</span><div class="fd">Apr 6</div></div>
-    <div class="fr"><div class="fi fi-ru">🏃</div><div style="flex:1"><div class="fn">Afternoon run</div><div class="fm">2.1 mi · 23 min · 11:28/mi</div></div><span class="hp hh">171 bpm</span><div class="fd">Apr 6</div></div>
-    <div class="fr"><div class="fi fi-ru">🏃</div><div style="flex:1"><div class="fn">Evening run</div><div class="fm">6.6 mi · 1h 41m · 15:31/mi</div></div><span class="hp hm">154 bpm</span><div class="fd">Apr 4</div></div>
-    <div class="fr"><div class="fi fi-sw">🏊</div><div style="flex:1"><div class="fn">Lunch swim</div><div class="fm">0.7 mi · 1h 15m</div></div><span class="hp hl">127 bpm</span><div class="fd">Apr 3</div></div>
-    <div class="fr"><div class="fi fi-st">🏋</div><div style="flex:1"><div class="fn">Morning weight training</div><div class="fm">1h 27m</div></div><span class="hp hl">124 bpm</span><div class="fd">Apr 2</div></div>
-    <div class="fr"><div class="fi fi-ru">🏃</div><div style="flex:1"><div class="fn">Night run</div><div class="fm">3.1 mi · 35 min · 10:57/mi</div></div><span class="hp hh">165 bpm</span><div class="fd">Apr 1</div></div>
-    <div class="fr"><div class="fi fi-sw">🏊</div><div style="flex:1"><div class="fn">Afternoon swim</div><div class="fm">0.7 mi · 57 min</div></div><span class="hp hl">132 bpm</span><div class="fd">Mar 29</div></div>
-    <div class="fr"><div class="fi fi-sw">🏊</div><div style="flex:1"><div class="fn">Evening swim</div><div class="fm">0.6 mi · 32 min</div></div><span class="hp hm">148 bpm</span><div class="fd">Mar 24</div></div>
-  </div>
+  <div class="feed" id="activity-feed"><div class="no-data">Loading activities…</div></div>
 </main>
 
 <footer>
-  <div class="ft">Powered by Strava · synced via Strautomator · updated <span id="updated-at"></span></div>
+  <div class="ft">Live Strava data via Strautomator · <span id="updated-at"></span></div>
   <a href="https://www.strava.com/athletes/pranavku" target="_blank" class="sl-a">View on Strava →</a>
 </footer>
 
 <script>
 const TODAY = new Date();
+let volChart = null, hrChart = null;
+
+const TYPE_ICONS = { swim:'🏊', run:'🏃', bike:'🚴', walk:'🚶', strength:'🏋', other:'⚡' };
+const TYPE_COLORS = { swim:'#3b82f6', run:'#f97316', bike:'#22c55e', walk:'#14b8a6', strength:'#a855f7', other:'#6b7280' };
+
 function daysTo(d){return Math.max(0,Math.ceil((new Date(d)-TODAY)/86400000));}
 function pct(s,r){const t=new Date(r)-new Date(s),e=TODAY-new Date(s);return Math.min(100,Math.max(1,Math.round(e/t*100)));}
 function week(){return Math.max(1,Math.min(16,Math.floor((TODAY-new Date('2026-04-13'))/(7*86400000))+1));}
 
-function init(){
-  document.getElementById('days-sprint').textContent=daysTo('2026-08-02');
-  document.getElementById('days-marathon').textContent=daysTo('2026-10-11');
-  document.getElementById('days-half').textContent=daysTo('2027-09-01');
-  document.getElementById('week-label').textContent=`days to race · week ${week()} of 16`;
-  document.getElementById('updated-at').textContent=TODAY.toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
-  document.getElementById('sync-label').textContent='Strava · '+TODAY.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+function initCountdowns() {
+  document.getElementById('days-sprint').textContent = daysTo('2026-08-02');
+  document.getElementById('days-marathon').textContent = daysTo('2026-10-11');
+  document.getElementById('days-half').textContent = daysTo('2027-09-01');
+  document.getElementById('week-label').textContent = `days to race · week ${week()} of 16`;
   setTimeout(()=>{
-    document.getElementById('bar-sprint').style.width=pct('2026-04-13','2026-08-02')+'%';
-    document.getElementById('bar-marathon').style.width=pct('2026-08-03','2026-10-11')+'%';
-    document.getElementById('bar-half').style.width=pct('2026-10-12','2027-09-01')+'%';
-  },400);
-  setTimeout(()=>document.getElementById('loading').classList.add('hidden'),1500);
-  buildCharts();
+    document.getElementById('bar-sprint').style.width = pct('2026-04-13','2026-08-02')+'%';
+    document.getElementById('bar-marathon').style.width = pct('2026-08-03','2026-10-11')+'%';
+    document.getElementById('bar-half').style.width = pct('2026-10-12','2027-09-01')+'%';
+  }, 400);
 }
 
-function buildCharts(){
-  new Chart(document.getElementById('chart-vol'),{
-    type:'bar',
-    data:{
-      labels:['M 24','M 29','M 30a','M 30b','A 1','A 2','A 3a','A 3b','A 4','A 6a','A 6b','A 7'],
-      datasets:[{label:'min',data:[32,57,32,42,35,87,75,19,101,23,73,17],backgroundColor:['#3b82f6','#3b82f6','#6b7280','#f97316','#f97316','#6b7280','#3b82f6','#6b7280','#f97316','#f97316','#6b7280','#6b7280'],borderRadius:2}]
-    },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw+' min'}}},scales:{x:{ticks:{color:'#6b7280',font:{size:9},maxRotation:45,autoSkip:false},grid:{display:false},border:{color:'rgba(255,255,255,0.07)'}},y:{ticks:{color:'#6b7280',font:{size:10}},grid:{color:'rgba(255,255,255,0.05)'},border:{display:false}}}}
-  });
-  new Chart(document.getElementById('chart-hr'),{
-    type:'line',
-    data:{
-      labels:['Mar 30','Apr 1','Apr 4','Apr 6'],
-      datasets:[
-        {label:'Avg HR',data:[169,165,154,171],borderColor:'#f97316',backgroundColor:'#f97316',tension:0.35,pointRadius:5,pointHoverRadius:7,borderWidth:2},
-        {label:'Z2 ceiling',data:[150,150,150,150],borderColor:'#f59e0b',backgroundColor:'transparent',borderDash:[6,4],pointRadius:0,borderWidth:1.5}
-      ]
-    },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': '+c.raw+' bpm'}}},scales:{x:{ticks:{color:'#6b7280',font:{size:11}},grid:{display:false},border:{color:'rgba(255,255,255,0.07)'}},y:{min:130,max:185,ticks:{color:'#6b7280',font:{size:10}},grid:{color:'rgba(255,255,255,0.05)'},border:{display:false}}}}
-  });
+function setStatus(state, label) {
+  const dot = document.getElementById('sdot');
+  dot.className = 'sdot' + (state !== 'live' ? ' '+state : '');
+  document.getElementById('sync-label').textContent = label;
 }
 
-window.addEventListener('load',init);
+async function loadData() {
+  const btn = document.getElementById('refresh-btn');
+  btn.disabled = true;
+  setStatus('loading', 'Fetching Strava…');
+  document.getElementById('load-text').textContent = 'Fetching Strava data';
+  document.getElementById('loading').classList.remove('hidden');
+
+  try {
+    const res = await fetch('/api/strava-sync');
+    if (!res.ok) throw new Error('API error ' + res.status);
+    const data = await res.json();
+    renderDashboard(data);
+    const now = new Date().toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+    document.getElementById('updated-at').textContent = 'Updated ' + now;
+    setStatus('live', 'Strava live · ' + now);
+  } catch(err) {
+    console.error(err);
+    setStatus('error', 'Sync failed — retry');
+    document.getElementById('activity-feed').innerHTML = '<div class="no-data">Could not load Strava data. Try refreshing.</div>';
+  } finally {
+    btn.disabled = false;
+    document.getElementById('loading').classList.add('hidden');
+  }
+}
+
+function renderDashboard(data) {
+  const { activities, stats } = data;
+
+  // Stats
+  document.getElementById('s-total').textContent = stats.total;
+  document.getElementById('s-range').textContent = 'Last 14 days';
+  document.getElementById('s-dist').textContent = stats.totalDist + ' mi';
+  document.getElementById('s-time').textContent = stats.totalTime;
+  document.getElementById('s-bike').textContent = stats.bikeSessions;
+  document.getElementById('s-bike').className = 'sv ' + (stats.noRides ? 'cr' : 'cg');
+  document.getElementById('s-bike-sub').textContent = stats.noRides ? 'priority — get riding!' : 'sessions logged';
+
+  // Disciplines
+  document.getElementById('d-swim').textContent = stats.swimSessions + ' session' + (stats.swimSessions !== 1 ? 's' : '');
+  document.getElementById('d-swim-sub').textContent = stats.swimDist + ' mi · avg HR ' + (stats.avgSwimHR || '—') + ' bpm';
+  document.getElementById('d-run').textContent = stats.runSessions + ' session' + (stats.runSessions !== 1 ? 's' : '');
+  document.getElementById('d-run-sub').textContent = stats.runDist + ' mi · avg HR ' + (stats.avgRunHR || '—') + ' bpm';
+  document.getElementById('d-other').textContent = stats.otherSessions + ' session' + (stats.otherSessions !== 1 ? 's' : '');
+
+  // Readiness
+  const swimEl = document.getElementById('r-swim');
+  swimEl.textContent = stats.swimReady ? 'Strong' : 'Building';
+  swimEl.className = 'rv ' + (stats.swimReady ? 'rs' : 'rb');
+  document.getElementById('r-swim-sub').textContent = stats.swimDist + ' mi total · race dist 0.47 mi';
+
+  const runEl = document.getElementById('r-run');
+  runEl.textContent = stats.runHRHigh ? 'Building' : 'On track';
+  runEl.className = 'rv ' + (stats.runHRHigh ? 'rb' : 'rs');
+  document.getElementById('r-run-sub').textContent = stats.avgRunHR ? `Avg HR ${stats.avgRunHR} bpm · ${stats.runHRHigh ? 'Zone 2 focus needed' : 'Good pacing!'}` : 'No runs yet';
+
+  const bikeEl = document.getElementById('r-bike');
+  bikeEl.textContent = stats.bikeSessions > 0 ? 'Started' : 'Not started';
+  bikeEl.className = 'rv ' + (stats.bikeSessions > 0 ? 'rb' : 'rn');
+  document.getElementById('r-bike-sub').textContent = stats.bikeSessions > 0 ? stats.bikeSessions + ' rides logged — keep building' : 'No rides logged — Week 1 priority';
+
+  // Activity feed
+  renderFeed(activities);
+
+  // Charts
+  renderCharts(activities);
+}
+
+function renderFeed(activities) {
+  const feed = document.getElementById('activity-feed');
+  if (!activities.length) { feed.innerHTML = '<div class="no-data">No activities in the last 14 days.</div>'; return; }
+  feed.innerHTML = activities.slice(0, 10).map(a => {
+    const icon = TYPE_ICONS[a.type] || '⚡';
+    const iconClass = 'fi-' + a.type;
+    const hrClass = a.hrClass === 'low' ? 'hl' : a.hrClass === 'mid' ? 'hm' : a.hrClass === 'high' ? 'hh' : '';
+    const meta = [
+      a.dist > 0 ? a.dist.toFixed(1) + ' mi' : null,
+      a.durationMin > 0 ? fmtDur(a.durationMin) : null,
+      a.pace ? a.pace + '/mi' : null
+    ].filter(Boolean).join(' · ');
+    const hr = a.avgHR > 0 ? `<span class="hp ${hrClass}">${a.avgHR} bpm</span>` : '';
+    return `<div class="fr">
+      <div class="fi ${iconClass}">${icon}</div>
+      <div style="flex:1"><div class="fn">${a.title}</div><div class="fm">${meta || '—'}</div></div>
+      ${hr}
+      <div class="fd">${a.dateLabel}</div>
+    </div>`;
+  }).join('');
+}
+
+function fmtDur(min) {
+  const h = Math.floor(min/60), m = min%60;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
+
+function renderCharts(activities) {
+  // Volume chart
+  const volLabels = activities.slice(0,12).reverse().map(a => a.dateLabel);
+  const volData = activities.slice(0,12).reverse().map(a => a.durationMin);
+  const volColors = activities.slice(0,12).reverse().map(a => TYPE_COLORS[a.type] || '#6b7280');
+
+  if (volChart) volChart.destroy();
+  volChart = new Chart(document.getElementById('chart-vol'), {
+    type: 'bar',
+    data: { labels: volLabels, datasets: [{ label: 'min', data: volData, backgroundColor: volColors, borderRadius: 2 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.raw + ' min' } } },
+      scales: {
+        x: { ticks: { color: '#6b7280', font: { size: 9 }, maxRotation: 45, autoSkip: false }, grid: { display: false }, border: { color: 'rgba(255,255,255,0.07)' } },
+        y: { ticks: { color: '#6b7280', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' }, border: { display: false } }
+      }
+    }
+  });
+
+  // HR chart — runs only
+  const runs = activities.filter(a => a.type === 'run' && a.avgHR > 0).slice(0,6).reverse();
+  if (hrChart) hrChart.destroy();
+  if (runs.length) {
+    hrChart = new Chart(document.getElementById('chart-hr'), {
+      type: 'line',
+      data: {
+        labels: runs.map(a => a.dateLabel),
+        datasets: [
+          { label: 'Avg HR', data: runs.map(a => a.avgHR), borderColor: '#f97316', backgroundColor: '#f97316', tension: 0.35, pointRadius: 5, borderWidth: 2 },
+          { label: 'Z2 ceiling', data: runs.map(() => 150), borderColor: '#f59e0b', backgroundColor: 'transparent', borderDash: [6,4], pointRadius: 0, borderWidth: 1.5 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.dataset.label + ': ' + c.raw + ' bpm' } } },
+        scales: {
+          x: { ticks: { color: '#6b7280', font: { size: 11 } }, grid: { display: false }, border: { color: 'rgba(255,255,255,0.07)' } },
+          y: { min: 120, max: 190, ticks: { color: '#6b7280', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.05)' }, border: { display: false } }
+        }
+      }
+    });
+  } else {
+    document.getElementById('chart-hr').closest('.cb').querySelector('.ct').textContent = 'Run HR — no runs yet';
+  }
+}
+
+window.addEventListener('load', () => {
+  initCountdowns();
+  loadData();
+});
 </script>
 </body>
 </html>
