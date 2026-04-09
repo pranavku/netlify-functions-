@@ -1,118 +1,48 @@
-# APEX Triathlon Intelligence
+# Apex Triathlon Dashboard
+**Live training dashboard for Pranav Kumar**
+🌐 [apex-triathlon.pranav-kumar.com](https://apex-triathlon.pranav-kumar.com)
 
-Pull real Strava workouts. Get brutally honest AI coaching from Claude.
-Auto-deploys from GitHub — change a file, push, it's live in 30 seconds.
+## What this is
+A live triathlon training dashboard that automatically pulls workout data from Strava via Strautomator and displays it at a glance — no login required, no app needed.
 
----
+## Features
+- **Live Strava sync** — fetches latest activities on every page load via Strautomator iCal feed
+- **Race countdowns** — Sprint Tri (Aug 2, 2026) · Chicago Marathon (Oct 11, 2026) · Half Tri (Sept 2027)
+- **Discipline breakdown** — swim, run, bike stats with avg HR and distance
+- **HR zone tracking** — run heart rate vs Zone 2 target (150 bpm ceiling)
+- **Sprint Tri readiness** — swim / run / bike readiness scores updated from real data
+- **Activity feed** — last 14 days of Strava activities with duration, distance, pace, HR
+- **Weekly training plan** — current week's prescribed workouts
+- **↺ Refresh button** — re-fetches live Strava data on demand
 
-## Repo Structure
+## Tech stack
+- Pure HTML/CSS/JS — no framework, no build step
+- Chart.js for activity volume and HR charts
+- Strautomator iCal feed as the Strava data source
+- CORS proxy (allorigins.win) to fetch iCal in-browser
+- Hosted on Netlify, deployed via GitHub
 
+## How data flows
 ```
-apex-triathlon/
-├── index.html                    ← Main app (edit this to change anything)
-├── netlify.toml                  ← Build config (don't touch)
-├── netlify/
-│   └── functions/
-│       ├── analyze.js            ← Claude API proxy
-│       └── strava-token.js       ← Strava OAuth proxy
-└── README.md
+Strava → Strautomator → iCal feed → Dashboard (browser fetch on load)
 ```
+Every time the page loads or Refresh is clicked, the browser fetches the latest iCal from Strautomator, parses the last 14 days of activities, and renders everything live.
 
----
+## Races
+| Race | Date | Distance |
+|------|------|----------|
+| Sprint Triathlon | Aug 2, 2026 | 750m swim / 20km bike / 5km run |
+| Chicago Marathon | Oct 11, 2026 | 26.2 miles |
+| Half Triathlon (70.3) | Sept 2027 | 1.2mi swim / 56mi bike / 13.1mi run |
 
-## One-Time Setup (20 min total)
+## Training plan
+16-week Sprint Tri block starting Apr 13, 2026. Phases: Base (4 wks) → Build (5 wks) → Peak (4 wks) → Taper (2 wks) → Race Week.
 
-### 1. Create GitHub repo
+## Daily briefing
+A recurring 7am Google Calendar event triggers a daily AI coaching briefing in Claude at [claude.ai](https://claude.ai). Type `morning briefing` to get a personalized daily analysis based on latest Strava data and calendar availability.
 
-```bash
-cd apex-triathlon
-git init
-git add .
-git commit -m "Initial APEX deploy"
-# Create a new repo on github.com, then:
-git remote add origin https://github.com/YOUR_USERNAME/apex-triathlon.git
-git push -u origin main
-```
+## Deployment
+Push to `main` branch → Netlify auto-deploys to `apex-triathlon.pranav-kumar.com` within ~60 seconds.
 
-### 2. Connect Netlify to GitHub
-
-1. Go to app.netlify.com → **Add new site → Import from Git**
-2. Choose GitHub → select your `apex-triathlon` repo
-3. Build settings are auto-detected from `netlify.toml`
-4. Click **Deploy site**
-
-Now every `git push` auto-deploys. No more manual file uploads.
-
-### 3. Set Environment Variables in Netlify
-
-Go to **Site settings → Environment variables** and add:
-
-| Variable | Value | Where to get it |
-|---|---|---|
-| `ANTHROPIC_API_KEY` | `sk-ant-...` | console.anthropic.com |
-| `STRAVA_CLIENT_ID` | `123456` | strava.com/settings/api |
-| `STRAVA_CLIENT_SECRET` | `abc...` | strava.com/settings/api |
-
-After adding variables → **Trigger deploy** (Deploys tab → Trigger deploy → Deploy site).
-
-### 4. Configure Strava App
-
-Go to **strava.com/settings/api** and set:
-
-- **Authorization Callback Domain**: your Netlify domain (e.g. `apex-triathlon.netlify.app` or `apex-triathlon.pranav-kumar.com`)
-
-### 5. Add Your Client ID to index.html
-
-Find this line in `index.html`:
-```javascript
-const clientId = window.STRAVA_CLIENT_ID || '{{STRAVA_CLIENT_ID}}';
-```
-
-Replace with your actual Client ID (it's public, safe in frontend):
-```javascript
-const clientId = '123456';
-```
-
-Commit and push — deploys automatically.
-
----
-
-## Making Changes
-
-```bash
-# Edit index.html (or any file)
-git add .
-git commit -m "Update analysis prompt"
-git push
-# Netlify auto-deploys in ~30 seconds
-```
-
----
-
-## How Auth Works
-
-```
-Browser → Strava OAuth → redirect back with ?code=...
-App → POST /.netlify/functions/strava-token (with code)
-Netlify Function → Strava API (using secret from env var, never exposed)
-← access_token + refresh_token stored in localStorage
-Token auto-refreshes when expired (6hr expiry handled silently)
-```
-
-Claude API calls similarly go through `/.netlify/functions/analyze` — your `ANTHROPIC_API_KEY` never touches the browser.
-
----
-
-## Athlete Profile
-
-Edit the `ATHLETE` constant in `index.html` to update your context:
-
-```javascript
-const ATHLETE = {
-  name: 'Pranav',
-  goals: 'Sprint Triathlon (August 3, 2026) and Full Marathon (October 11, 2026)',
-  ftp: 245,           // Update after next FTP test
-  weight: 188,
-  trainingPhase: 'Base Building → Tri Build',
-};
-```
+## Local dev
+No build process — just open `index.html` in a browser. iCal fetch may be blocked locally due to CORS; use a local proxy or test on the deployed URL.
