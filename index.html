@@ -18,14 +18,6 @@
 body{background:var(--bg);color:var(--text);font-family:var(--sans);font-weight:300;min-height:100vh;overflow-x:hidden;}
 
 /* Loading */
-#loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:1.2rem;transition:opacity 0.5s;}
-#loading.hidden{opacity:0;pointer-events:none;}
-.load-logo{font-family:var(--display);font-weight:800;font-size:2.4rem;letter-spacing:0.05em;text-transform:uppercase;}
-.load-logo span{color:var(--accent);}
-.load-bar{width:140px;height:2px;background:var(--border2);overflow:hidden;}
-.load-fill{height:100%;background:var(--accent);animation:lp 1.8s ease-in-out infinite alternate;}
-@keyframes lp{from{width:10%}to{width:90%}}
-.load-text{font-family:var(--mono);font-size:0.65rem;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;}
 
 /* Header */
 header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 2rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(10,12,15,0.95);backdrop-filter:blur(16px);z-index:100;flex-wrap:wrap;gap:0.75rem;}
@@ -243,12 +235,6 @@ footer{padding:1.25rem 2rem;border-top:1px solid var(--border);display:flex;alig
 </style>
 </head>
 <body>
-
-<div id="loading">
-  <div class="load-logo">Apex <span>Tri</span></div>
-  <div class="load-bar"><div class="load-fill"></div></div>
-  <div class="load-text" id="load-text">Fetching Strava data</div>
-</div>
 
 <header>
   <div class="logo">Apex <span>Tri</span></div>
@@ -746,7 +732,7 @@ function openClaudeCoach(){
 
 // ─── INIT ─────────────────────────────────────
 document.getElementById('log-date').value=new Date().toISOString().split('T')[0];
-document.getElementById('loading').classList.add('hidden');
+
 initCountdowns();
 initTimeline();
 loadData();
