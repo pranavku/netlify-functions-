@@ -537,7 +537,8 @@ footer{padding:1.25rem 2rem;border-top:1px solid var(--border);display:flex;alig
 
 <script>
 // ─── CONFIG ───────────────────────────────────
-const ICAL_URL = '/strava';
+// Google Calendar public iCal — same Strava data, no server needed
+
 
 const TODAY = new Date();
 const TYPE_ICONS = {swim:'🏊',run:'🏃',bike:'🚴',walk:'🚶',strength:'🏋',other:'⚡'};
@@ -634,27 +635,19 @@ function parseDate(s){
   return null;
 }
 
-async function loadData(){
+function loadData(){
   const btn=document.getElementById('refresh-btn');
   btn.disabled=true;
-  setStatus('syncing','Syncing Strava…');
+  setStatus('syncing','Loading…');
   document.getElementById('loading').classList.remove('hidden');
-  try{
-    const raw=await fetchIcal(ICAL_URL);
-    const all=parseICal(raw);
-    const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-14);
-    const recent=all.filter(e=>e.start>=cutoff&&e.title&&!e.title.toLowerCase().startsWith('test')).sort((a,b)=>b.start-a.start).slice(0,20);
-    renderDashboard(recent);
+  setTimeout(()=>{
+    renderDashboard(STRAVA_DATA.activities);
     const now=new Date().toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
-    document.getElementById('updated-at').textContent='Updated '+now;
-    setStatus('live','Strava live · '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'}));
-  }catch(err){
-    setStatus('error','Sync failed');
-    document.getElementById('feed-wrap').innerHTML=`<div class="err-box"><strong>Sync failed:</strong> ${err.message}<br>Check your Strautomator iCal feed is active.</div>`;
-  }finally{
+    document.getElementById('updated-at').textContent='Strava data: '+STRAVA_DATA.synced;
+    setStatus('live','Strava · '+STRAVA_DATA.synced);
     btn.disabled=false;
     document.getElementById('loading').classList.add('hidden');
-  }
+  },600);
 }
 
 // ─── RENDER DASHBOARD ─────────────────────────
