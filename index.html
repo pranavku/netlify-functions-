@@ -636,18 +636,9 @@ function parseDate(s){
 }
 
 function loadData(){
-  const btn=document.getElementById('refresh-btn');
-  btn.disabled=true;
-  setStatus('syncing','Loading…');
-  document.getElementById('loading').classList.remove('hidden');
-  setTimeout(()=>{
-    renderDashboard(STRAVA_DATA.activities);
-    const now=new Date().toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
-    document.getElementById('updated-at').textContent='Strava data: '+STRAVA_DATA.synced;
-    setStatus('live','Strava · '+STRAVA_DATA.synced);
-    btn.disabled=false;
-    document.getElementById('loading').classList.add('hidden');
-  },600);
+  renderDashboard(STRAVA_DATA.activities);
+  document.getElementById('updated-at').textContent='Strava data: '+STRAVA_DATA.synced;
+  setStatus('live','Strava · '+STRAVA_DATA.synced);
 }
 
 // ─── RENDER DASHBOARD ─────────────────────────
@@ -755,6 +746,7 @@ function openClaudeCoach(){
 
 // ─── INIT ─────────────────────────────────────
 document.getElementById('log-date').value=new Date().toISOString().split('T')[0];
+document.getElementById('loading').classList.add('hidden');
 initCountdowns();
 initTimeline();
 loadData();
